@@ -1,0 +1,21 @@
+# Build outputs
+bin/
+obj/
+artifacts/
+publish/
+*.user
+.vs/
+
+# Real skin samples and fonts are not redistributable (requirements §19.3)
+*.ssf
+Fonts/
+
+# Test/tool output
+TestResults/
+*.received.*
+_acceptance/
+publish/
+
+# Local NuGet / IDE
+*.user
+*.suo

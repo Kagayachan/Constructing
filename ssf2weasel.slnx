@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Ssf2Weasel.Cli/Ssf2Weasel.Cli.csproj" />
+    <Project Path="src/Ssf2Weasel.Core/Ssf2Weasel.Core.csproj" />
+    <Project Path="src/Ssf2Weasel.Infrastructure/Ssf2Weasel.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Ssf2Weasel.IntegrationTests/Ssf2Weasel.IntegrationTests.csproj" />
+    <Project Path="tests/Ssf2Weasel.TestSupport/Ssf2Weasel.TestSupport.csproj" />
+    <Project Path="tests/Ssf2Weasel.UnitTests/Ssf2Weasel.UnitTests.csproj" />
+  </Folder>
+</Solution>

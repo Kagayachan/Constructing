@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Ssf2Weasel.TestSupport</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Ssf2Weasel.Core\Ssf2Weasel.Core.csproj" />
+    <ProjectReference Include="..\..\src\Ssf2Weasel.Infrastructure\Ssf2Weasel.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

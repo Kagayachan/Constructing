@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Ssf2Weasel.Core</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Ssf2Weasel.UnitTests" />
+    <InternalsVisibleTo Include="Ssf2Weasel.IntegrationTests" />
+  </ItemGroup>
+</Project>

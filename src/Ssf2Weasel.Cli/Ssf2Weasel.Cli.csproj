@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>ssf2weasel</AssemblyName>
+    <RootNamespace>Ssf2Weasel.Cli</RootNamespace>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <RuntimeIdentifier Condition="'$(PublishSingleFile)' == 'true'">win-x64</RuntimeIdentifier>
+    <SelfContained Condition="'$(PublishSingleFile)' == 'true'">true</SelfContained>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <!-- Trimming and NativeAOT are disabled for the first release: reflection-based
+         YAML serialization and GDI+ interop are not verified against them yet. -->
+    <PublishTrimmed>false</PublishTrimmed>
+    <PublishAot>false</PublishAot>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Ssf2Weasel.Core\Ssf2Weasel.Core.csproj" />
+    <ProjectReference Include="..\Ssf2Weasel.Infrastructure\Ssf2Weasel.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>
