@@ -4,6 +4,58 @@ using System.Diagnostics;
 
 namespace Infrastructure.Install;
 
+/// <summary>
+/// The deploy and rollback steps of §15.3, shared by install and restore so the
+/// two paths cannot drift apart.
+/// </summary>
+internal static class DeploymentSteps
+{
+    /// <summary>
+    /// Runs the deployer, treating a thrown exception as a failed deployment so the
+    /// caller rolls back rather than surfacing internal error 70 (code review H-03).
+    /// </summary>
+    public static bool SafeDeploy(IWeaselDeployer deployer)
+    {
+        try
+        {
+            return deployer.Deploy();
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Restores <paramref name="backupPath"/> over the target, or removes the target
+    /// when there was no previous configuration to restore. Returns false when the
+    /// previous state could not be recovered.
+    /// </summary>
+    public static bool TryRollback(string targetPath, string? backupPath)
+    {
+        try
+        {
+            if (backupPath is null)
+            {
+                if (File.Exists(targetPath))
+                {
+                    File.Delete(targetPath);
+                }
+            }
+            else
+            {
+                AtomicFileWriter.WriteBytesAtomic(targetPath, File.ReadAllBytes(backupPath));
+            }
+
+            return true;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
+}
+
 /// <summary>Triggers a Weasel redeployment; abstracted so tests can inject failures (IT-009).</summary>
 public interface IWeaselDeployer
 {

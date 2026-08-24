@@ -53,9 +53,10 @@ public sealed class RestoreService
         }
 
         // Back up the current configuration before restoring over it (§14.5).
-        var hadPreviousConfig = File.Exists(customYamlPath);
+        // A non-null safety backup is exactly the "there was a previous config" case,
+        // which is what the rollback below keys off.
         string? safetyBackup = null;
-        if (hadPreviousConfig)
+        if (File.Exists(customYamlPath))
         {
             safetyBackup = BackupManager.CreateBackup(customYamlPath, rimeDirectory, _toolVersion, DateTimeOffset.UtcNow);
         }
@@ -67,7 +68,7 @@ public sealed class RestoreService
             return new RestoreResult(customYamlPath, safetyBackup, Deployed: false);
         }
 
-        if (SafeDeploy(deployer))
+        if (DeploymentSteps.SafeDeploy(deployer))
         {
             return new RestoreResult(customYamlPath, safetyBackup, Deployed: true);
         }
@@ -75,9 +76,9 @@ public sealed class RestoreService
         // Deployment of the restored configuration failed. Roll the pre-restore
         // state back so exit code 10 truthfully means "previous state recovered"
         // (code review H-04); only then attempt a best-effort redeploy.
-        if (TryRollback(customYamlPath, safetyBackup, hadPreviousConfig))
+        if (DeploymentSteps.TryRollback(customYamlPath, safetyBackup))
         {
-            SafeDeploy(deployer);
+            DeploymentSteps.SafeDeploy(deployer);
             throw new ToolException(
                 ExitCode.DeployFailedRolledBack,
                 DiagnosticCodes.DeployFailed,
@@ -90,43 +91,5 @@ public sealed class RestoreService
             DiagnosticCodes.RollbackFailed,
             "Weasel deployment failed and the previous configuration could not be recovered." +
             (safetyBackup is null ? string.Empty : $" Restore manually from: {safetyBackup}"));
-    }
-
-    private static bool TryRollback(string customYamlPath, string? safetyBackup, bool hadPreviousConfig)
-    {
-        try
-        {
-            if (hadPreviousConfig && safetyBackup is not null)
-            {
-                AtomicFileWriter.WriteBytesAtomic(customYamlPath, File.ReadAllBytes(safetyBackup));
-            }
-            else
-            {
-                // There was no configuration before the restore; remove the file we wrote.
-                if (File.Exists(customYamlPath))
-                {
-                    File.Delete(customYamlPath);
-                }
-            }
-
-            return true;
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            return false;
-        }
-    }
-
-    private static bool SafeDeploy(IWeaselDeployer deployer)
-    {
-        try
-        {
-            return deployer.Deploy();
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            // A deployer that throws is treated as a failed deployment (H-03).
-            return false;
-        }
     }
 }

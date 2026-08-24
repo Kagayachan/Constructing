@@ -13,7 +13,7 @@ public static class ValidateCommand
     private static readonly string[] Flags = ["--json", "--verbose"];
     private static readonly string[] Valued = [];
 
-    public static int Run(string[] args, TextWriter stdout, TextWriter stderr)
+    public static int Run(string[] args, TextWriter stdout)
     {
         var options = CliOptions.Parse(args, Flags, Valued);
         var input = options.Positional ?? throw CliOptions.Usage("validate requires a .ssf or .yaml file.");
@@ -44,7 +44,7 @@ public static class ValidateCommand
         {
             kind = "ssf";
             // Full dry run: load, select and map, but write nothing (§14.4).
-            var loaded = ConversionPipeline.Load(input, CancellationToken.None);
+            var loaded = ConversionPipeline.Load(input);
             ConversionPipeline.Convert(loaded, LayoutKind.Horizontal, CliApplication.ToolVersion, []);
         }
 

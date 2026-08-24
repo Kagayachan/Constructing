@@ -15,6 +15,5 @@ public enum ExitCode
     InstallError = 9,
     DeployFailedRolledBack = 10,
     DeployAndRollbackFailed = 11,
-    Cancelled = 12,
     InternalError = 70,
 }

@@ -67,6 +67,4 @@ public static partial class SkinIdGenerator
 
         return "ssf_" + sourceSha256[..12].ToLowerInvariant();
     }
-
-    public static bool IsValid(string id) => ValidId().IsMatch(id);
 }

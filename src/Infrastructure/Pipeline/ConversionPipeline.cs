@@ -17,13 +17,11 @@ namespace Infrastructure.Pipeline;
 
 /// <summary>Everything known about a loaded skin before mapping.</summary>
 public sealed record LoadedSkin(
-    string FilePath,
     string FileName,
     long FileSize,
     string Sha256,
     SsfContainerKind Container,
     SkinPackage Package,
-    SkinIniDocument Ini,
     NormalizedSkin Skin);
 
 /// <summary>All artifacts of one conversion, ready to be written to disk.</summary>
@@ -37,7 +35,7 @@ public sealed record ConversionArtifacts(
 /// <summary>Orchestrates the conversion flow of §7: load, normalize, select, analyze, map, emit.</summary>
 public static class ConversionPipeline
 {
-    public static LoadedSkin Load(string inputPath, CancellationToken cancellationToken, ResourceLimits? limits = null)
+    public static LoadedSkin Load(string inputPath, ResourceLimits? limits = null)
     {
         limits ??= ResourceLimits.Default;
 
@@ -83,7 +81,7 @@ public static class ConversionPipeline
 
         var container = SsfContainerDetector.Detect(content);
         var reader = SsfContainerDetector.CreateReader(container, limits);
-        var package = reader.Read(content, cancellationToken);
+        var package = reader.Read(content);
 
         var iniEntry = package.FindSkinIni()
             ?? throw new ToolException(
@@ -99,13 +97,11 @@ public static class ConversionPipeline
         var skin = NormalizedSkinBuilder.Build(package, ini, fallbackName, new GdiImageMetadataReader(), parseDiagnostics);
 
         return new LoadedSkin(
-            FilePath: Path.GetFullPath(inputPath),
             FileName: Path.GetFileName(inputPath),
             FileSize: content.LongLength,
             Sha256: System.Convert.ToHexStringLower(SHA256.HashData(content)),
             Container: container,
             Package: package,
-            Ini: ini,
             Skin: skin);
     }
 

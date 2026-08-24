@@ -14,9 +14,7 @@ namespace Infrastructure.Yaml;
 /// </summary>
 public static class WeaselCustomMerger
 {
-    public sealed record MergeResult(string MergedYaml, bool ReplacedExistingScheme);
-
-    public static MergeResult Merge(string? existingYaml, WeaselTheme theme, bool force)
+    public static string Merge(string? existingYaml, WeaselTheme theme, bool force)
     {
         YamlMappingNode root;
         if (string.IsNullOrWhiteSpace(existingYaml))
@@ -53,7 +51,7 @@ public static class WeaselCustomMerger
         }
 
         var schemePath = $"preset_color_schemes/{theme.ColorSchemeId}";
-        var replaced = CheckConflict(patch, theme.ColorSchemeId, schemePath, force);
+        CheckConflict(patch, theme.ColorSchemeId, schemePath, force);
 
         foreach (var (path, value) in WeaselPatchBuilder.Build(theme))
         {
@@ -73,18 +71,18 @@ public static class WeaselCustomMerger
             text = text[..^4];
         }
 
-        return new MergeResult(text, replaced);
+        return text;
     }
 
     /// <summary>
-    /// Returns true when an existing scheme with the same id will be replaced.
-    /// Throws unless the existing entry is tool-managed and --force was given (§12.2 rule 7).
+    /// Throws unless an existing scheme with the same id is absent, or is tool-managed
+    /// and --force was given (§12.2 rule 7).
     /// </summary>
-    private static bool CheckConflict(YamlMappingNode patch, string schemeId, string schemePath, bool force)
+    private static void CheckConflict(YamlMappingNode patch, string schemeId, string schemePath, bool force)
     {
         if (!TryFindExistingScheme(patch, schemeId, schemePath, out var existingNode))
         {
-            return false;
+            return;
         }
 
         // A same-id node that is not a mapping (scalar, sequence or null) is foreign
@@ -119,8 +117,6 @@ public static class WeaselCustomMerger
                 $"Color scheme '{schemeId}' already exists. Use --force to replace it.",
                 hint: "The existing entry was created by ssf2weasel and can be replaced safely with --force.");
         }
-
-        return true;
     }
 
     /// <summary>

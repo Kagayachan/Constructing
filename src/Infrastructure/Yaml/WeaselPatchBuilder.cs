@@ -60,8 +60,4 @@ public static class WeaselPatchBuilder
         entries.Add(new($"preset_color_schemes/{theme.ColorSchemeId}", new YamlMap(scheme)));
         return entries;
     }
-
-    /// <summary>Patch paths that this tool owns and may overwrite during a merge (§15.4).</summary>
-    public static IReadOnlyList<string> ManagedStylePaths(WeaselTheme theme)
-        => Build(theme).Select(e => e.Key).Where(k => k.StartsWith("style/", StringComparison.Ordinal)).ToArray();
 }

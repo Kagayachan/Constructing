@@ -32,7 +32,7 @@ public static class ConvertCommand
             var other => throw CliOptions.Usage($"Invalid --layout value '{other}'; use horizontal or vertical."),
         };
 
-        var loaded = ConversionPipeline.Load(input, CancellationToken.None);
+        var loaded = ConversionPipeline.Load(input);
         var colorSchemeId = SkinIdGenerator.Generate(loaded.Skin.Metadata.Name, loaded.Sha256);
 
         var outputDirectory = options.GetValue("--output") ?? Path.Combine(Environment.CurrentDirectory, $"{colorSchemeId}-weasel");
@@ -63,7 +63,7 @@ public static class ConvertCommand
             outputDirectory,
             [
                 (yamlPath, Utf8NoBom.GetBytes(artifacts.YamlText)),
-                (reportPath, Utf8NoBom.GetBytes(ReportWriter.Write(artifacts.Report))),
+                (reportPath, Utf8NoBom.GetBytes(ReportWriter.WriteAny(artifacts.Report))),
                 (previewPath, artifacts.PreviewPng),
             ],
             force);

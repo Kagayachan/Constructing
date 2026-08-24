@@ -76,8 +76,8 @@ public sealed class WeaselInstaller
             existingYaml = File.ReadAllText(customYamlPath);
         }
 
-        var merged = WeaselCustomMerger.Merge(existingYaml, theme, options.Force);
-        WeaselYamlValidator.ValidateCustomYaml(merged.MergedYaml, ExitCode.InstallError);
+        var mergedYaml = WeaselCustomMerger.Merge(existingYaml, theme, options.Force);
+        WeaselYamlValidator.ValidateCustomYaml(mergedYaml, ExitCode.InstallError);
 
         // Step 6: back up the current file before any write.
         string? backupPath = null;
@@ -91,7 +91,7 @@ public sealed class WeaselInstaller
         {
             AtomicFileWriter.WriteAtomic(
                 customYamlPath,
-                merged.MergedYaml,
+                mergedYaml,
                 verifyTempFile: tempPath =>
                     WeaselYamlValidator.ValidateCustomYaml(File.ReadAllText(tempPath), ExitCode.InstallError));
         }
@@ -110,18 +110,17 @@ public sealed class WeaselInstaller
             return new InstallResult(customYamlPath, backupPath, Deployed: false, RolledBack: false);
         }
 
-        if (SafeDeploy(deployer))
+        if (DeploymentSteps.SafeDeploy(deployer))
         {
             return new InstallResult(customYamlPath, backupPath, Deployed: true, RolledBack: false);
         }
 
         // Deployment failed: restore the previous configuration.
-        var rollbackOk = TryRollback(customYamlPath, backupPath);
-        if (rollbackOk)
+        if (DeploymentSteps.TryRollback(customYamlPath, backupPath))
         {
             // Best effort: redeploy the restored configuration (§15.3 step 13);
             // its result must not mask the successful rollback (H-03).
-            SafeDeploy(deployer);
+            DeploymentSteps.SafeDeploy(deployer);
             throw new ToolException(
                 ExitCode.DeployFailedRolledBack,
                 DiagnosticCodes.DeployFailed,
@@ -134,41 +133,5 @@ public sealed class WeaselInstaller
             DiagnosticCodes.RollbackFailed,
             "Weasel deployment failed and the previous configuration could not be restored." +
             (backupPath is null ? string.Empty : $" Restore manually from: {backupPath}"));
-    }
-
-    private static bool SafeDeploy(IWeaselDeployer deployer)
-    {
-        try
-        {
-            return deployer.Deploy();
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            // A deployer that throws is treated as a failed deployment so the
-            // caller rolls back rather than surfacing internal error 70 (H-03).
-            return false;
-        }
-    }
-
-    private static bool TryRollback(string customYamlPath, string? backupPath)
-    {
-        try
-        {
-            if (backupPath is null)
-            {
-                // There was no previous file; rolling back means removing the new one.
-                File.Delete(customYamlPath);
-            }
-            else
-            {
-                AtomicFileWriter.WriteBytesAtomic(customYamlPath, File.ReadAllBytes(backupPath));
-            }
-
-            return true;
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            return false;
-        }
     }
 }

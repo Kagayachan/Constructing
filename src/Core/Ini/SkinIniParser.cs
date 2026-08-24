@@ -7,7 +7,8 @@ namespace Core.Ini;
 /// <summary>Parses skin.ini bytes: encoding detection per §9.1, line rules per §9.2.</summary>
 public static class SkinIniParser
 {
-    private static readonly string[] KnownSections =
+    /// <summary>The sections §9.2 gives meaning to; anything else is preserved and reported.</summary>
+    internal static readonly string[] KnownSections =
     [
         "General", "Display", "Scheme_H1", "Scheme_H2", "Scheme_V1", "Scheme_V2", "StatusBar",
     ];

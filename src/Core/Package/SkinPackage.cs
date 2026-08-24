@@ -22,9 +22,8 @@ public sealed class SkinPackage
     private readonly List<SkinPackageEntry> _entries;
     private readonly List<Diagnostic> _diagnostics;
 
-    public SkinPackage(SsfContainerKind container, IEnumerable<SkinPackageEntry> entries, IEnumerable<Diagnostic>? diagnostics = null)
+    public SkinPackage(IEnumerable<SkinPackageEntry> entries, IEnumerable<Diagnostic>? diagnostics = null)
     {
-        Container = container;
         _entries = [];
         _index = new Dictionary<string, SkinPackageEntry>(StringComparer.OrdinalIgnoreCase);
         _diagnostics = diagnostics is null ? [] : [.. diagnostics];
@@ -46,8 +45,6 @@ public sealed class SkinPackage
             _index[entry.Name] = entry;
         }
     }
-
-    public SsfContainerKind Container { get; }
 
     public IReadOnlyList<SkinPackageEntry> Entries => _entries;
 

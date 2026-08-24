@@ -18,7 +18,6 @@ public enum LayoutKind
 }
 
 public sealed record SkinMetadata(
-    string? Id,
     string Name,
     string? Version,
     string? Author,
@@ -56,11 +55,8 @@ public sealed record SkinScheme(
     public string? PrimaryVisualAsset => BackgroundAsset ?? CandidateBackgroundAsset ?? PinyinBackgroundAsset;
 }
 
-public sealed record StatusBarDefinition(string? BackgroundAsset, IReadOnlyList<string> ReferencedAssets);
-
 public sealed record SkinAsset(
     string OriginalName,
-    string NormalizedName,
     string MediaType,
     int? Width,
     int? Height,
@@ -73,7 +69,7 @@ public sealed record NormalizedSkin(
     SkinTypography Typography,
     SkinColors Colors,
     IReadOnlyDictionary<SkinSchemeKind, SkinScheme> Schemes,
-    StatusBarDefinition? StatusBar,
+    bool HasStatusBar,
     IReadOnlyDictionary<string, SkinAsset> Assets,
     IReadOnlyList<Diagnostic> Diagnostics,
     IReadOnlyList<string> UnknownSections);

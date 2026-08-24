@@ -40,9 +40,9 @@ public static class CliApplication
             return args[0] switch
             {
                 "convert" => ConvertCommand.Run(commandArgs, stdout, stderr, deployerFactory),
-                "inspect" => InspectCommand.Run(commandArgs, stdout, stderr),
-                "validate" => ValidateCommand.Run(commandArgs, stdout, stderr),
-                "restore" => RestoreCommand.Run(commandArgs, stdout, stderr, deployerFactory),
+                "inspect" => InspectCommand.Run(commandArgs, stdout),
+                "validate" => ValidateCommand.Run(commandArgs, stdout),
+                "restore" => RestoreCommand.Run(commandArgs, stdout, deployerFactory),
                 _ => throw CliOptions.Usage($"Unknown command '{args[0]}'."),
             };
         }
@@ -50,11 +50,6 @@ public static class CliApplication
         {
             WriteError(ex.Code, ex.Message, ex.Hint, json, verbose, ex, stdout, stderr);
             return (int)ex.ExitCode;
-        }
-        catch (OperationCanceledException)
-        {
-            WriteError("CANCELLED", "The operation was cancelled by the user.", null, json, verbose, null, stdout, stderr);
-            return (int)ExitCode.Cancelled;
         }
         catch (Exception ex)
         {

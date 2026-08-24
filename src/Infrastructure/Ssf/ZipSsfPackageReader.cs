@@ -17,10 +17,7 @@ public sealed class ZipSsfPackageReader : ISsfPackageReader
         _limits = limits ?? ResourceLimits.Default;
     }
 
-    public bool CanRead(ReadOnlySpan<byte> header)
-        => header.Length >= 2 && header[0] == 0x50 && header[1] == 0x4B;
-
-    public SkinPackage Read(byte[] content, CancellationToken cancellationToken)
+    public SkinPackage Read(byte[] content)
     {
         var diagnostics = new List<Diagnostic>();
         var entries = new List<SkinPackageEntry>();
@@ -32,8 +29,6 @@ public sealed class ZipSsfPackageReader : ISsfPackageReader
             var accepted = 0;
             foreach (var entry in archive.Entries)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
                 if (entry.FullName.EndsWith('/') || entry.FullName.EndsWith('\\'))
                 {
                     continue; // directory marker
@@ -58,7 +53,7 @@ public sealed class ZipSsfPackageReader : ISsfPackageReader
                 {
                     // Copy through a bounded stream so a zip-bomb entry cannot expand
                     // without limit even though the central directory understates it.
-                    var bytes = ReadEntryBounded(entry, ref totalUncompressed, cancellationToken);
+                    var bytes = ReadEntryBounded(entry, ref totalUncompressed);
                     entries.Add(new SkinPackageEntry(entry.FullName, bytes));
                 }
                 catch (Exception ex) when (ex is InvalidDataException or IOException)
@@ -81,10 +76,10 @@ public sealed class ZipSsfPackageReader : ISsfPackageReader
                 inner: ex);
         }
 
-        return new SkinPackage(SsfContainerKind.Zip, entries, diagnostics);
+        return new SkinPackage(entries, diagnostics);
     }
 
-    private byte[] ReadEntryBounded(ZipArchiveEntry entry, ref long totalUncompressed, CancellationToken cancellationToken)
+    private byte[] ReadEntryBounded(ZipArchiveEntry entry, ref long totalUncompressed)
     {
         using var stream = entry.Open();
         using var buffer = new MemoryStream();
@@ -92,7 +87,6 @@ public sealed class ZipSsfPackageReader : ISsfPackageReader
         int read;
         while ((read = stream.Read(chunk, 0, chunk.Length)) > 0)
         {
-            cancellationToken.ThrowIfCancellationRequested();
             buffer.Write(chunk, 0, read);
             if (buffer.Length > _limits.MaxEntryBytes)
             {

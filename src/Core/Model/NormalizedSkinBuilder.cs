@@ -11,11 +11,6 @@ namespace Core.Model;
 /// <summary>Builds the platform-independent skin model (§10) from a package and its parsed skin.ini.</summary>
 public static class NormalizedSkinBuilder
 {
-    private static readonly string[] KnownSections =
-    [
-        "General", "Display", "Scheme_H1", "Scheme_H2", "Scheme_V1", "Scheme_V2", "StatusBar",
-    ];
-
     public static NormalizedSkin Build(
         SkinPackage package,
         SkinIniDocument ini,
@@ -30,7 +25,6 @@ public static class NormalizedSkinBuilder
         var display = ini.GetSection("Display");
 
         var metadata = new SkinMetadata(
-            Id: general?.Get("skin_id"),
             Name: FirstNonEmpty(general?.Get("skin_name"), fallbackName)!,
             Version: general?.Get("skin_version"),
             Author: general?.Get("skin_author"),
@@ -62,17 +56,19 @@ public static class NormalizedSkinBuilder
             schemes[kind] = BuildScheme(kind, section);
         }
 
-        var statusBar = BuildStatusBar(ini.GetSection("StatusBar"));
+        // The Sogou status bar has no Weasel equivalent, so only its presence is
+        // modelled; it is reported as an expected degradation and nothing more.
+        var hasStatusBar = ini.GetSection("StatusBar") is not null;
 
         var assets = BuildAssets(package, imageReader, diagnostics);
 
         var unknownSections = ini.Sections
-            .Where(s => s.Name.Length > 0 && !KnownSections.Contains(s.Name, StringComparer.OrdinalIgnoreCase))
+            .Where(s => s.Name.Length > 0 && !SkinIniParser.KnownSections.Contains(s.Name, StringComparer.OrdinalIgnoreCase))
             .Select(s => s.Name)
             .ToArray();
 
         return new NormalizedSkin(
-            metadata, typography, colors, schemes, statusBar, assets, diagnostics, unknownSections);
+            metadata, typography, colors, schemes, hasStatusBar, assets, diagnostics, unknownSections);
     }
 
     private static SkinScheme BuildScheme(SkinSchemeKind kind, IniSection section)
@@ -107,22 +103,6 @@ public static class NormalizedSkinBuilder
             TransparentColor: transparentColor);
     }
 
-    private static StatusBarDefinition? BuildStatusBar(IniSection? section)
-    {
-        if (section is null)
-        {
-            return null;
-        }
-
-        var referenced = section.Entries
-            .Select(e => e.Value)
-            .Where(LooksLikeAssetName)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-
-        return new StatusBarDefinition(FirstNonEmpty(section.Get("pic")), referenced);
-    }
-
     private static Dictionary<string, SkinAsset> BuildAssets(
         SkinPackage package,
         IImageMetadataReader imageReader,
@@ -155,7 +135,6 @@ public static class NormalizedSkinBuilder
 
             assets[entry.Name] = new SkinAsset(
                 OriginalName: entry.Name,
-                NormalizedName: entry.Name.ToLowerInvariant(),
                 MediaType: mediaType,
                 Width: width,
                 Height: height,
@@ -213,15 +192,6 @@ public static class NormalizedSkinBuilder
         }
 
         return result;
-    }
-
-    private static bool LooksLikeAssetName(string value)
-    {
-        var v = value.Trim();
-        return v.Length > 4 &&
-               (v.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
-                v.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase) ||
-                v.EndsWith(".gif", StringComparison.OrdinalIgnoreCase));
     }
 
     private static string? FirstNonEmpty(params string?[] values)
