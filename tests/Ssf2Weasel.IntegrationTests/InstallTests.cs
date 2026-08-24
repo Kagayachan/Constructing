@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-using Ssf2Weasel.Core;
-using Ssf2Weasel.Infrastructure.Install;
-using Ssf2Weasel.Infrastructure.Yaml;
+using Core;
+using Infrastructure.Install;
+using Infrastructure.Yaml;
 using Ssf2Weasel.TestSupport;
 using Xunit;
 using YamlDotNet.RepresentationModel;

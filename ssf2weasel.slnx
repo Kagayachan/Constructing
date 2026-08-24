@@ -1,8 +1,8 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/Ssf2Weasel.Cli/Ssf2Weasel.Cli.csproj" />
-    <Project Path="src/Ssf2Weasel.Core/Ssf2Weasel.Core.csproj" />
-    <Project Path="src/Ssf2Weasel.Infrastructure/Ssf2Weasel.Infrastructure.csproj" />
+    <Project Path="src/Cli/Cli.csproj" />
+    <Project Path="src/Core/Core.csproj" />
+    <Project Path="src/Infrastructure/Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Ssf2Weasel.IntegrationTests/Ssf2Weasel.IntegrationTests.csproj" />

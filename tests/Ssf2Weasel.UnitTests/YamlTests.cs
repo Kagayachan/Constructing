@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-using Ssf2Weasel.Core;
-using Ssf2Weasel.Core.Mapping;
-using Ssf2Weasel.Infrastructure.Yaml;
+using Core;
+using Core.Mapping;
+using Infrastructure.Yaml;
 using Xunit;
 using YamlDotNet.RepresentationModel;
 
@@ -90,7 +90,7 @@ public class YamlWriterTests
     {
         var yaml = WeaselYamlWriter.Write(ThemeFactory.Create(), "1.0.0")
             .Replace("0xf6f6f6", "0xF6F6F6");
-        var ex = Assert.Throws<Ssf2WeaselException>(
+        var ex = Assert.Throws<ToolException>(
             () => WeaselYamlValidator.ValidateCustomYaml(yaml, ExitCode.ConversionError));
         Assert.Equal("YAML_INVALID", ex.Code);
     }
@@ -111,7 +111,7 @@ public class YamlMergerTests
     [Fact]
     public void Preserves_unrelated_keys_and_activates_new_scheme()
     {
-        var merged = WeaselCustomMerger.Merge(ExistingYaml, ThemeFactory.Create(), force: false).MergedYaml;
+        var merged = WeaselCustomMerger.Merge(ExistingYaml, ThemeFactory.Create(), force: false);
         var root = WeaselYamlValidator.ParseRoot(merged, ExitCode.InstallError);
         var patch = (YamlMappingNode)root.Children[new YamlScalarNode("patch")];
 
@@ -128,7 +128,7 @@ public class YamlMergerTests
     [Fact]
     public void Empty_or_missing_file_produces_fresh_patch()
     {
-        var merged = WeaselCustomMerger.Merge(null, ThemeFactory.Create(), force: false).MergedYaml;
+        var merged = WeaselCustomMerger.Merge(null, ThemeFactory.Create(), force: false);
         WeaselYamlValidator.ValidateCustomYaml(merged, ExitCode.InstallError);
     }
 
@@ -141,7 +141,7 @@ public class YamlMergerTests
                 name: "hand made"
                 text_color: 0x000000
             """;
-        var ex = Assert.Throws<Ssf2WeaselException>(
+        var ex = Assert.Throws<ToolException>(
             () => WeaselCustomMerger.Merge(existing, ThemeFactory.Create(), force: true));
         Assert.Equal(ExitCode.OutputConflict, ex.ExitCode);
     }
@@ -149,15 +149,14 @@ public class YamlMergerTests
     [Fact]
     public void Conflict_with_managed_scheme_requires_force()
     {
-        var first = WeaselCustomMerger.Merge(null, ThemeFactory.Create(), force: false).MergedYaml;
+        var first = WeaselCustomMerger.Merge(null, ThemeFactory.Create(), force: false);
 
-        var ex = Assert.Throws<Ssf2WeaselException>(
+        var ex = Assert.Throws<ToolException>(
             () => WeaselCustomMerger.Merge(first, ThemeFactory.Create(), force: false));
         Assert.Equal(ExitCode.OutputConflict, ex.ExitCode);
 
         var replaced = WeaselCustomMerger.Merge(first, ThemeFactory.Create(), force: true);
-        Assert.True(replaced.ReplacedExistingScheme);
-        WeaselYamlValidator.ValidateCustomYaml(replaced.MergedYaml, ExitCode.InstallError);
+        WeaselYamlValidator.ValidateCustomYaml(replaced, ExitCode.InstallError);
     }
 
     [Fact]
@@ -169,7 +168,7 @@ public class YamlMergerTests
                 color_scheme: macau
                 inline_preedit: true
             """;
-        var merged = WeaselCustomMerger.Merge(existing, ThemeFactory.Create(), force: false).MergedYaml;
+        var merged = WeaselCustomMerger.Merge(existing, ThemeFactory.Create(), force: false);
         var root = WeaselYamlValidator.ParseRoot(merged, ExitCode.InstallError);
         var patch = (YamlMappingNode)root.Children[new YamlScalarNode("patch")];
         var style = (YamlMappingNode)patch.Children[new YamlScalarNode("style")];

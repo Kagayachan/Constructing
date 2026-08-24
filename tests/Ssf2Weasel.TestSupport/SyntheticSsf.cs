@@ -5,7 +5,7 @@ using System.Drawing.Imaging;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
-using Ssf2Weasel.Infrastructure.Ssf;
+using Infrastructure.Ssf;
 
 namespace Ssf2Weasel.TestSupport;
 

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 using System.Buffers.Binary;
 using System.Text;
-using Ssf2Weasel.Core;
-using Ssf2Weasel.Infrastructure.Ssf;
+using Core;
+using Infrastructure.Ssf;
 using Ssf2Weasel.TestSupport;
 using Xunit;
 
@@ -17,7 +17,7 @@ public class LegacyReaderTests
         files["中文名字.png"] = SyntheticSsf.SolidPng(8, 8, System.Drawing.Color.Red);
 
         var ssf = SyntheticSsf.CreateLegacySkin(files);
-        var package = new LegacyEncryptedSsfPackageReader().Read(ssf, CancellationToken.None);
+        var package = new LegacyEncryptedSsfPackageReader().Read(ssf);
 
         Assert.Equal(files.Count, package.Entries.Count);
         foreach (var (name, content) in files)
@@ -31,7 +31,7 @@ public class LegacyReaderTests
     public void Filename_lookup_is_case_insensitive()
     {
         var ssf = SyntheticSsf.CreateLegacySkin();
-        var package = new LegacyEncryptedSsfPackageReader().Read(ssf, CancellationToken.None);
+        var package = new LegacyEncryptedSsfPackageReader().Read(ssf);
         Assert.True(package.TryGetEntry("SKIN.INI", out _));
     }
 
@@ -41,8 +41,8 @@ public class LegacyReaderTests
         var ssf = SyntheticSsf.CreateLegacySkin();
         var truncated = ssf[..(ssf.Length / 2 / 16 * 16 + 8)]; // keep block alignment, drop the tail
 
-        var ex = Assert.Throws<Ssf2WeaselException>(
-            () => new LegacyEncryptedSsfPackageReader().Read(truncated, CancellationToken.None));
+        var ex = Assert.Throws<ToolException>(
+            () => new LegacyEncryptedSsfPackageReader().Read(truncated));
         Assert.Equal(ExitCode.PackageError, ex.ExitCode);
     }
 
@@ -52,8 +52,8 @@ public class LegacyReaderTests
         var ssf = SyntheticSsf.CreateLegacySkin();
         var misaligned = ssf[..^3];
 
-        var ex = Assert.Throws<Ssf2WeaselException>(
-            () => new LegacyEncryptedSsfPackageReader().Read(misaligned, CancellationToken.None));
+        var ex = Assert.Throws<ToolException>(
+            () => new LegacyEncryptedSsfPackageReader().Read(misaligned));
         Assert.Equal(ExitCode.PackageError, ex.ExitCode);
     }
 
@@ -80,8 +80,8 @@ public class LegacyReaderTests
         var cipher = aes.EncryptCbc(payload, LegacyEncryptedSsfPackageReader.AesIv, System.Security.Cryptography.PaddingMode.None);
         byte[] ssf = [(byte)'S', (byte)'k', (byte)'i', (byte)'n', 0, 0, 0, 0, .. cipher];
 
-        var ex = Assert.Throws<Ssf2WeaselException>(
-            () => new LegacyEncryptedSsfPackageReader().Read(ssf, CancellationToken.None));
+        var ex = Assert.Throws<ToolException>(
+            () => new LegacyEncryptedSsfPackageReader().Read(ssf));
         Assert.Equal("SSF_DECOMPRESSED_LENGTH_MISMATCH", ex.Code);
     }
 
@@ -93,8 +93,8 @@ public class LegacyReaderTests
         var offset = BinaryPrimitives.ReadUInt32LittleEndian(pack.AsSpan(8));
         BinaryPrimitives.WriteUInt32LittleEndian(pack.AsSpan((int)offset), 7);
 
-        var ex = Assert.Throws<Ssf2WeaselException>(
-            () => LegacyEncryptedSsfPackageReader.ParseFilePack(pack, CancellationToken.None));
+        var ex = Assert.Throws<ToolException>(
+            () => LegacyEncryptedSsfPackageReader.ParseFilePack(pack));
         Assert.Equal(ExitCode.PackageError, ex.ExitCode);
     }
 
@@ -104,8 +104,8 @@ public class LegacyReaderTests
         var pack = SyntheticSsf.BuildFilePack(new Dictionary<string, byte[]> { ["a.txt"] = [1, 2, 3] });
         BinaryPrimitives.WriteUInt32LittleEndian(pack.AsSpan(8), (uint)pack.Length + 100);
 
-        var ex = Assert.Throws<Ssf2WeaselException>(
-            () => LegacyEncryptedSsfPackageReader.ParseFilePack(pack, CancellationToken.None));
+        var ex = Assert.Throws<ToolException>(
+            () => LegacyEncryptedSsfPackageReader.ParseFilePack(pack));
         Assert.Equal(ExitCode.PackageError, ex.ExitCode);
     }
 
@@ -114,7 +114,7 @@ public class LegacyReaderTests
     {
         var files = new Dictionary<string, byte[]> { ["name.png"] = [9] };
         var pack = SyntheticSsf.BuildFilePack(files);
-        var entries = LegacyEncryptedSsfPackageReader.ParseFilePack(pack, CancellationToken.None);
+        var entries = LegacyEncryptedSsfPackageReader.ParseFilePack(pack);
         Assert.Equal("name.png", entries.Single().Name);
     }
 }

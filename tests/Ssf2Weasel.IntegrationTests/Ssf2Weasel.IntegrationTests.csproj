@@ -4,9 +4,9 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Ssf2Weasel.Cli\Ssf2Weasel.Cli.csproj" />
-    <ProjectReference Include="..\..\src\Ssf2Weasel.Core\Ssf2Weasel.Core.csproj" />
-    <ProjectReference Include="..\..\src\Ssf2Weasel.Infrastructure\Ssf2Weasel.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Cli\Cli.csproj" />
+    <ProjectReference Include="..\..\src\Core\Core.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Infrastructure.csproj" />
     <ProjectReference Include="..\Ssf2Weasel.TestSupport\Ssf2Weasel.TestSupport.csproj" />
   </ItemGroup>
   <ItemGroup>

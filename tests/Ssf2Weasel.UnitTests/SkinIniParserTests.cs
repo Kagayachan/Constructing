@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 using System.Text;
-using Ssf2Weasel.Core;
-using Ssf2Weasel.Core.Diagnostics;
-using Ssf2Weasel.Core.Ini;
+using Core;
+using Core.Diagnostics;
+using Core.Ini;
 using Ssf2Weasel.TestSupport;
 using Xunit;
 
@@ -52,7 +52,7 @@ public class SkinIniParserTests
     public void Invalid_encoding_throws_exit_code_6()
     {
         byte[] invalid = [0xC3, 0x28, 0xA0, 0x0A, 0xFF, 0x1F, 0x41, 0x42];
-        var ex = Assert.Throws<Ssf2WeaselException>(
+        var ex = Assert.Throws<ToolException>(
             () => SkinIniParser.Parse(invalid, new List<Diagnostic>()));
         Assert.Equal(ExitCode.IniError, ex.ExitCode);
         Assert.Equal("SSF_INI_ENCODING_UNSUPPORTED", ex.Code);

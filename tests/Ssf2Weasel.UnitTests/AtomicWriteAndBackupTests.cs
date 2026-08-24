@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-using Ssf2Weasel.Core;
-using Ssf2Weasel.Infrastructure.Install;
+using Core;
+using Infrastructure.Install;
 using Xunit;
 
 namespace Ssf2Weasel.UnitTests;
@@ -76,7 +76,7 @@ public class AtomicWriteAndBackupTests : IDisposable
         var backup = BackupManager.CreateBackup(source, _dir, "1.0.0", DateTimeOffset.UtcNow);
 
         File.AppendAllText(backup, "# tampered");
-        var ex = Assert.Throws<Ssf2WeaselException>(() => BackupManager.ValidateBackup(backup));
+        var ex = Assert.Throws<ToolException>(() => BackupManager.ValidateBackup(backup));
         Assert.Equal("BACKUP_INVALID", ex.Code);
     }
 
@@ -85,7 +85,7 @@ public class AtomicWriteAndBackupTests : IDisposable
     {
         var file = Path.Combine(_dir, "random.yaml");
         File.WriteAllText(file, "patch: {}\n");
-        var ex = Assert.Throws<Ssf2WeaselException>(() => BackupManager.ValidateBackup(file));
+        var ex = Assert.Throws<ToolException>(() => BackupManager.ValidateBackup(file));
         Assert.Equal("BACKUP_INVALID", ex.Code);
     }
 
