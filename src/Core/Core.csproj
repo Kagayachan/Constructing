@@ -3,7 +3,7 @@
     <RootNamespace>Core</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <InternalsVisibleTo Include="UnitTests" />
-    <InternalsVisibleTo Include="IntegrationTests" />
+    <InternalsVisibleTo Include="Ssf2Weasel.UnitTests" />
+    <InternalsVisibleTo Include="Ssf2Weasel.IntegrationTests" />
   </ItemGroup>
 </Project>

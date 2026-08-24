@@ -13,13 +13,13 @@ public static class InspectCommand
     private static readonly string[] Flags = ["--json", "--verbose"];
     private static readonly string[] Valued = [];
 
-    public static int Run(string[] args, TextWriter stdout, TextWriter stderr)
+    public static int Run(string[] args, TextWriter stdout)
     {
         var options = CliOptions.Parse(args, Flags, Valued);
         var input = options.Positional ?? throw CliOptions.Usage("inspect requires an input .ssf file.");
         var json = options.HasFlag("--json");
 
-        var loaded = ConversionPipeline.Load(input, CancellationToken.None);
+        var loaded = ConversionPipeline.Load(input);
 
         var degradations = new List<string>();
         foreach (var (kind, scheme) in loaded.Skin.Schemes.OrderBy(s => s.Key))
@@ -35,7 +35,7 @@ public static class InspectCommand
             }
         }
 
-        if (loaded.Skin.StatusBar is not null)
+        if (loaded.Skin.HasStatusBar)
         {
             degradations.Add("StatusBar: not representable in Weasel");
         }

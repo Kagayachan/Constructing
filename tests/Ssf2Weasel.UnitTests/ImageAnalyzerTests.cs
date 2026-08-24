@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 using System.Drawing;
 using System.Drawing.Imaging;
-using Ssf2Weasel.Core.Colors;
-using Ssf2Weasel.Infrastructure.Imaging;
+using Core.Colors;
+using Infrastructure.Imaging;
 using Ssf2Weasel.TestSupport;
 using Xunit;
 

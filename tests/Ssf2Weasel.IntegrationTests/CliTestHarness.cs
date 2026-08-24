@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-using Ssf2Weasel.Cli;
-using Ssf2Weasel.Infrastructure.Install;
+using Cli;
+using Infrastructure.Install;
 
 namespace Ssf2Weasel.IntegrationTests;
 

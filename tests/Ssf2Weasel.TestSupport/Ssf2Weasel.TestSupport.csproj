@@ -4,7 +4,6 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Ssf2Weasel.Core\Ssf2Weasel.Core.csproj" />
-    <ProjectReference Include="..\..\src\Ssf2Weasel.Infrastructure\Ssf2Weasel.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 </Project>

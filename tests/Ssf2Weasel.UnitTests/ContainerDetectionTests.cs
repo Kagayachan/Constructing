@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-using Ssf2Weasel.Core;
-using Ssf2Weasel.Core.Package;
-using Ssf2Weasel.Infrastructure.Ssf;
+using Core;
+using Core.Package;
+using Infrastructure.Ssf;
 using Xunit;
 
 namespace Ssf2Weasel.UnitTests;
@@ -25,7 +25,7 @@ public class ContainerDetectionTests
     [InlineData(new byte[] { 0x50, 0x4B })]
     public void Rejects_unknown_signatures_with_exit_code_4(byte[] header)
     {
-        var ex = Assert.Throws<Ssf2WeaselException>(() => SsfContainerDetector.Detect(header));
+        var ex = Assert.Throws<ToolException>(() => SsfContainerDetector.Detect(header));
         Assert.Equal(ExitCode.UnsupportedContainer, ex.ExitCode);
         Assert.Equal("SSF_UNSUPPORTED_CONTAINER", ex.Code);
     }

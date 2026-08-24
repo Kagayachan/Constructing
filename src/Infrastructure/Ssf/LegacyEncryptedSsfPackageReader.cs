@@ -35,12 +35,7 @@ public sealed class LegacyEncryptedSsfPackageReader : ISsfPackageReader
         0xE0, 0x7A, 0xAD, 0x35, 0xE0, 0x90, 0xAA, 0x03, 0x8A, 0x51, 0xFD, 0x05, 0xDF, 0x8C, 0x5D, 0x0F,
     ];
 
-    public bool CanRead(ReadOnlySpan<byte> header)
-        => header.Length >= 4 &&
-           header[0] == (byte)'S' && header[1] == (byte)'k' &&
-           header[2] == (byte)'i' && header[3] == (byte)'n';
-
-    public SkinPackage Read(byte[] content, CancellationToken cancellationToken)
+    public SkinPackage Read(byte[] content)
     {
         if (content.Length < 8 + 16)
         {
@@ -82,8 +77,6 @@ public sealed class LegacyEncryptedSsfPackageReader : ISsfPackageReader
                 inner: ex);
         }
 
-        cancellationToken.ThrowIfCancellationRequested();
-
         // Decrypted stream: UInt32 LE expected decompressed length + zlib data (§8.3.2).
         if (plain.Length < 4)
         {
@@ -105,7 +98,7 @@ public sealed class LegacyEncryptedSsfPackageReader : ISsfPackageReader
             using var zlib = new ZLibStream(input, CompressionMode.Decompress);
             // Stop after one byte beyond the declared length so a corrupt/hostile
             // stream cannot expand without bound (code review H-01).
-            decompressed = ReadBounded(zlib, expectedLength, _limits.MaxTotalUncompressedBytes, cancellationToken);
+            decompressed = ReadBounded(zlib, expectedLength, _limits.MaxTotalUncompressedBytes);
         }
         catch (InvalidDataException ex)
         {
@@ -124,8 +117,8 @@ public sealed class LegacyEncryptedSsfPackageReader : ISsfPackageReader
                 $"Decompressed length {decompressed.Length} does not match the declared length {expectedLength}.");
         }
 
-        var entries = ParseFilePack(decompressed, cancellationToken, _limits);
-        return new SkinPackage(SsfContainerKind.LegacyEncrypted, entries, diagnostics);
+        var entries = ParseFilePack(decompressed, _limits);
+        return new SkinPackage(entries, diagnostics);
     }
 
     /// <summary>
@@ -133,7 +126,7 @@ public sealed class LegacyEncryptedSsfPackageReader : ISsfPackageReader
     /// <paramref name="expected"/> bytes (a hard cap of expected + 1 is enough to
     /// detect the overrun) or exceeds the absolute uncompressed cap.
     /// </summary>
-    private static byte[] ReadBounded(Stream stream, long expected, long absoluteCap, CancellationToken cancellationToken)
+    private static byte[] ReadBounded(Stream stream, long expected, long absoluteCap)
     {
         var hardCap = Math.Min(absoluteCap, expected) + 1;
         using var output = new MemoryStream(expected > 0 && expected <= int.MaxValue ? (int)expected : 0);
@@ -141,7 +134,6 @@ public sealed class LegacyEncryptedSsfPackageReader : ISsfPackageReader
         int read;
         while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
         {
-            cancellationToken.ThrowIfCancellationRequested();
             output.Write(buffer, 0, read);
             if (output.Length > hardCap)
             {
@@ -156,10 +148,7 @@ public sealed class LegacyEncryptedSsfPackageReader : ISsfPackageReader
     }
 
     /// <summary>Parses the decompressed file pack with full bounds checking (§8.3.3).</summary>
-    internal static List<SkinPackageEntry> ParseFilePack(
-        byte[] pack,
-        CancellationToken cancellationToken,
-        ResourceLimits? limits = null)
+    internal static List<SkinPackageEntry> ParseFilePack(byte[] pack, ResourceLimits? limits = null)
     {
         limits ??= ResourceLimits.Default;
         var span = pack.AsSpan();
@@ -192,8 +181,6 @@ public sealed class LegacyEncryptedSsfPackageReader : ISsfPackageReader
 
         for (var i = 0; i < offsetCount; i++)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             var offset = BinaryPrimitives.ReadUInt32LittleEndian(span[(8 + i * 4)..]);
             if (offset > (uint)span.Length - 4)
             {

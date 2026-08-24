@@ -19,3 +19,6 @@ publish/
 # Local NuGet / IDE
 *.user
 *.suo
+
+# macOS
+.DS_Store

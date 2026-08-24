@@ -11,7 +11,7 @@ public static class RestoreCommand
     private static readonly string[] Flags = ["--no-deploy", "--json", "--verbose"];
     private static readonly string[] Valued = ["--rime-dir", "--weasel-dir"];
 
-    public static int Run(string[] args, TextWriter stdout, TextWriter stderr, Func<string, IWeaselDeployer>? deployerFactory)
+    public static int Run(string[] args, TextWriter stdout, Func<string, IWeaselDeployer>? deployerFactory)
     {
         var options = CliOptions.Parse(args, Flags, Valued);
         var backupPath = options.Positional ?? throw CliOptions.Usage("restore requires a backup file.");

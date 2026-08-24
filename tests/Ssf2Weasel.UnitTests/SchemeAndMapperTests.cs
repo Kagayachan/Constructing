@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-using Ssf2Weasel.Core;
-using Ssf2Weasel.Core.Assets;
-using Ssf2Weasel.Core.Diagnostics;
-using Ssf2Weasel.Core.Mapping;
-using Ssf2Weasel.Core.Model;
+using Core;
+using Core.Assets;
+using Core.Diagnostics;
+using Core.Mapping;
+using Core.Model;
 using Xunit;
 
 namespace Ssf2Weasel.UnitTests;
@@ -35,7 +35,7 @@ public class SchemeSelectorTests
     [Fact]
     public void No_schemes_at_all_throws_conversion_error()
     {
-        var ex = Assert.Throws<Ssf2WeaselException>(
+        var ex = Assert.Throws<ToolException>(
             () => SchemeSelector.Select(LayoutKind.Horizontal, [], new List<Diagnostic>()));
         Assert.Equal(ExitCode.ConversionError, ex.ExitCode);
     }
@@ -60,21 +60,21 @@ public class WeaselMapperTests
             BackgroundMaskAsset: null,
             PinyinBackgroundAsset: null,
             CandidateBackgroundAsset: null,
-            HorizontalLayout: horizontalLayout ?? [0, 10, 12],
+            HorizontalLayout: (horizontalLayout ?? [0, 10, 12]).Select(v => (int?)v).ToArray(),
             VerticalLayout: [0, 8, 9],
             PinyinMargin: [6, 5, 10, 10],
             CandidateMargin: [4, 6],
             Overlays: []);
 
         return new NormalizedSkin(
-            new SkinMetadata(null, "Test Skin", "1.0", "author", null, null, null),
+            new SkinMetadata("Test Skin", "1.0", "author", null, null, null),
             typography ?? new SkinTypography("宋体", "Arial", 15),
             colors ?? new SkinColors("0xf6f6f6", "0x3e9eff", "0xe0e0e0", "0x808080"),
             new Dictionary<SkinSchemeKind, SkinScheme> { [SkinSchemeKind.H1] = scheme },
-            StatusBar: null,
+            HasStatusBar: false,
             Assets: new Dictionary<string, SkinAsset>(StringComparer.OrdinalIgnoreCase)
             {
-                ["back.png"] = new SkinAsset("back.png", "back.png", "image/png", 400, 120, 1, new string('0', 64)),
+                ["back.png"] = new SkinAsset("back.png", "image/png", 400, 120, 1, new string('0', 64)),
             },
             Diagnostics: [],
             UnknownSections: []);
@@ -222,7 +222,7 @@ public class WeaselMapperTests
         var skin = MakeSkin() with
         {
             Schemes = new Dictionary<SkinSchemeKind, SkinScheme> { [SkinSchemeKind.H1] = scheme },
-            StatusBar = new StatusBarDefinition("bar.png", ["bar.png"]),
+            HasStatusBar = true,
         };
 
         var result = MapDefault(skin);

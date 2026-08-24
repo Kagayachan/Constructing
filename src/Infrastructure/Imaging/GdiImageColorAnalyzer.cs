@@ -92,7 +92,7 @@ public sealed class GdiImageColorAnalyzer : IImageColorAnalyzer
             return null;
         }
 
-        var back = DominantColor(visible, excludeNear: null);
+        var back = DominantColor(visible);
         var border = ring.Count > 0 ? MedianColor(ring) : back;
         var accent = AccentColor(visible, back);
 
@@ -155,19 +155,12 @@ public sealed class GdiImageColorAnalyzer : IImageColorAnalyzer
         }
     }
 
-    private static (byte R, byte G, byte B) DominantColor(
-        List<(byte R, byte G, byte B)> pixels,
-        (byte R, byte G, byte B)? excludeNear)
+    private static (byte R, byte G, byte B) DominantColor(List<(byte R, byte G, byte B)> pixels)
     {
         // Quantize to 4 bits per channel, then average the winning bucket.
         var buckets = new Dictionary<int, (long R, long G, long B, int Count)>();
         foreach (var p in pixels)
         {
-            if (excludeNear is not null && ChannelDistance(p, excludeNear.Value) < 96)
-            {
-                continue;
-            }
-
             var key = ((p.R >> 4) << 8) | ((p.G >> 4) << 4) | (p.B >> 4);
             buckets.TryGetValue(key, out var acc);
             buckets[key] = (acc.R + p.R, acc.G + p.G, acc.B + p.B, acc.Count + 1);
@@ -217,7 +210,7 @@ public sealed class GdiImageColorAnalyzer : IImageColorAnalyzer
             return null;
         }
 
-        return DominantColor(saturated, excludeNear: null);
+        return DominantColor(saturated);
     }
 
     private static int ChannelDistance((byte R, byte G, byte B) a, (byte R, byte G, byte B) b)

@@ -374,7 +374,7 @@ public static class WeaselMapper
             }
         }
 
-        if (skin.StatusBar is not null)
+        if (skin.HasStatusBar)
         {
             Add("StatusBar: Sogou status bar background and buttons");
         }

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-using Ssf2Weasel.Core.Colors;
-using Ssf2Weasel.Core.Mapping;
+using Core.Colors;
+using Core.Mapping;
 using Xunit;
 
 namespace Ssf2Weasel.UnitTests;
